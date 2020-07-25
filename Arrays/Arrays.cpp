@@ -9,6 +9,7 @@ class SArrayException : public Exception {};
 class SArrayMemoryException : public SArrayException {};
 class SArrayBoundaryException : public SArrayException {};
 
+//testing
 
 template <class DT>
 class SortedArray {
