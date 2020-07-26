@@ -38,7 +38,7 @@ public:
 	//void operator= (const SortedArray<DT>& sa);
 	int find(const DT& lookfor);
 	void insert(const DT& newElement); // For inserting new elements in the array
-	void remove(DT& oldElement);
+	void remove(const DT& oldElement);
 };
 
 //The constructors ---------------------------------------------------------
@@ -55,7 +55,7 @@ SortedArray<DT>::SortedArray() {
 	_size = ARRAY_CLASS_DEFAULT_SIZE;
 }
 
-//non-default constructor
+//non-default constructor 
 template <class DT>
 SortedArray<DT>::SortedArray(int n) {
 	_size = 0; // default in case allocation fails
@@ -71,7 +71,7 @@ SortedArray<DT>::SortedArray(const SortedArray<DT>& sa) {
 		copy(sa);
 }
 
-//For implementing copy constructor
+//For implementing copy constructor ------------------------------------------------------------
 template <class DT>
 void SortedArray<DT>::copy(const SortedArray<DT>& sa) {
 	_size = 0;
@@ -83,7 +83,7 @@ void SortedArray<DT>::copy(const SortedArray<DT>& sa) {
 	}
 }
 
-//destructor
+//destructor method ---------------------------------------------------------------------------
 template <class DT>
 SortedArray<DT>::~SortedArray (){
 	if (elements != NULL) delete []elements;
@@ -91,6 +91,7 @@ SortedArray<DT>::~SortedArray (){
 	_size = 0;
 }
 
+//Getter methods --------------------------------------------------------------------------
 template <class DT>
 int SortedArray<DT>::size () {
 	return _size;
@@ -101,11 +102,13 @@ int SortedArray<DT>::getCapacity() {
 	return capacity;
 }
 
+//A fuction for increasing size, not sure if necessary ------------------------------------------------------------
 template <class DT>
 void SortedArray<DT>::increaseSize() {
 	_size = _size + 1;
 }
 
+//The overloaded indexing operator ------------------------------------------------------------------------------
 template <class DT>
 DT& SortedArray<DT>::operator[] (int k) {
 	if ((k < 0) || (k >= getCapacity())) throw SortedArrayBoundaryException(); //If indexing outside of bounds of array, throw error
@@ -178,29 +181,37 @@ void SortedArray<DT>::insert(const DT& newElement) {
 	
 }
 
+//The remove function ------------------------------------------------------------------------------------
+template<class DT>
+void SortedArray<DT>::remove(const DT& oldElement) {
+	
+	int pos;
+	pos = this->find(oldElement); //Search in this array for the position of the element
+	if (this->elements[pos] != oldElement) throw SortedArrayMemoryException(); //If the element is not in the array, throw exception
 
+	int n = this->size();
 
+	for(int i = pos; i < n - 1; i++) { //Starting from the desired element and going until the next to last spot
+		this->elements[i] = this->elements[i + 1]; //Should overwrite from the desired position to the end
+	}
+
+	this->_size = this->_size - 1; //Decrease the size of the array
+}
 
 
 int main() {
 
 	SortedArray<int> ai(5);
 
-	for (int i = 0; i < (ai.getCapacity()-1); i++) {
+	for (int i = 0; i < (ai.getCapacity()); i++) {
 		ai[i] = i*2;
 		ai.increaseSize();
 	}
 
 	cout << ai << endl;
 	
-	//cout << ai[ai.size()-1] <<endl;
-
-	//cout << ai.find(-1) << endl;
-
-	ai.insert(3);
 
 	cout << ai;
-	//cout << ai[5];
 	
 	return 0;
 
