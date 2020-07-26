@@ -33,10 +33,12 @@ public:
 	virtual ~SortedArray();
 	virtual DT& operator[] (int k);
 	virtual int size() ; 
+	int getCapacity();
 	void increaseSize(); //Increase the size of the objects in the array
 	//void operator= (const SortedArray<DT>& sa);
 	int find(const DT& lookfor);
 	void insert(const DT& newElement); // For inserting new elements in the array
+	void remove(DT& oldElement);
 };
 
 //The constructors ---------------------------------------------------------
@@ -47,7 +49,7 @@ const int ARRAY_CLASS_DEFAULT_SIZE = 1;
 template <class DT>
 SortedArray<DT>::SortedArray() {
 	_size = 0; // default in case allocation fails
-	capcity = 0;
+	capacity = 0;
 	elements = new DT[ARRAY_CLASS_DEFAULT_SIZE];
 	if (elements == NULL) throw SortedArrayMemoryException();
 	_size = ARRAY_CLASS_DEFAULT_SIZE;
@@ -60,7 +62,7 @@ SortedArray<DT>::SortedArray(int n) {
 	capacity = n;
 	elements = new DT[n];
 	if (elements == NULL) throw SortedArrayMemoryException();
-	_size = n;
+	_size = 0; //Starts out with no elements 
 }
 
 template <class DT>
@@ -95,13 +97,18 @@ int SortedArray<DT>::size () {
 }
 
 template <class DT>
+int SortedArray<DT>::getCapacity() {
+	return capacity;
+}
+
+template <class DT>
 void SortedArray<DT>::increaseSize() {
 	_size = _size + 1;
 }
 
 template <class DT>
 DT& SortedArray<DT>::operator[] (int k) {
-	if ((k < 0) || (k >= size())) throw SortedArrayBoundaryException();
+	if ((k < 0) || (k >= getCapacity())) throw SortedArrayBoundaryException(); //If indexing outside of bounds of array, throw error
 	return elements[k];
 }
 
@@ -150,20 +157,20 @@ int SortedArray<DT>::find(const DT& lookfor) {
 //Insertion ---------------------------------------------------------------------------------------------------------------------
 template <class DT>
 void SortedArray<DT>::insert(const DT& newElement) {
-	//if ((this->find(newElement)) != 0) throw SortedArrayRedundantException(); // TODO: fix this If the element is already in the array, throw exception
-	//if ((this->size() == this.capacity)) throw SortedArrayBoundaryException(); // If the array has already hit max capacity, throw exception
+	
+	if ((this->size() == this->getCapacity())) throw SortedArrayBoundaryException(); // If the array has already hit max capacity, throw exception
 
 	int pos;
 	pos = this->find(newElement); //Search in this array for the position of the element
 	
-	
+	if (this->elements[pos] == newElement) throw SortedArrayRedundantException(); //Should throw an error if the item is already in the array
+
+	int n = this->size();
+
 	this->increaseSize(); //Increase  the size of the array by one
 
 	
-	int n = this->size();
-	
-	
-	for (int i = n-1; i > pos; i--) { //Starting from the end of the array and going until right before position
+	for (int i = n; i > pos; i--) { //Starting from the end of the array and going until right before position
 		this->elements[i] = this->elements[i - 1];  //Move everything over by one, this way I don't overwrite elements
 	}
 	
@@ -179,8 +186,9 @@ int main() {
 
 	SortedArray<int> ai(5);
 
-	for (int i = 0; i < (ai.size ()-1); i++) {
+	for (int i = 0; i < (ai.getCapacity()-1); i++) {
 		ai[i] = i*2;
+		ai.increaseSize();
 	}
 
 	cout << ai << endl;
@@ -189,7 +197,7 @@ int main() {
 
 	//cout << ai.find(-1) << endl;
 
-	//ai.insert(3);
+	ai.insert(3);
 
 	cout << ai;
 	//cout << ai[5];
