@@ -24,21 +24,24 @@ protected:
 	DT* elements; //The elements that will be inside the array
 	int _size;    // The size of the array
 	int capacity; // The initial capacity of the array
-	void copy(const SortedArray<DT>& sa);
+	//void copy(const SortedArray<DT>& sa);
 
 public:
 	SortedArray(); //default constructor
 	SortedArray(int n); //The non-default constructor
-	SortedArray(const SortedArray<DT>& sa);
+	//SortedArray(const SortedArray<DT>& sa, int i); //The copy constructor
 	virtual ~SortedArray();
 	virtual DT& operator[] (int k);
-	virtual int size() ; 
+	virtual int size() ;  //Getter for size
+	void setSize(int n);
 	int getCapacity();
 	void increaseSize(); //Increase the size of the objects in the array
 	//void operator= (const SortedArray<DT>& sa);
 	int find(const DT& lookfor);
 	void insert(const DT& newElement); // For inserting new elements in the array
 	void remove(const DT& oldElement);
+	SortedArray<DT>& split(int pos);
+
 };
 
 //The constructors ---------------------------------------------------------
@@ -65,12 +68,14 @@ SortedArray<DT>::SortedArray(int n) {
 	_size = 0; //Starts out with no elements 
 }
 
+/*
 template <class DT>
-SortedArray<DT>::SortedArray(const SortedArray<DT>& sa) {
-	if (&sa != this)
+SortedArray<DT>::SortedArray(const SortedArray<DT>& sa, int i) {
+	if (&sa != this) //Disallow copying the object on to itself
 		copy(sa);
 }
-
+*/
+/*
 //For implementing copy constructor ------------------------------------------------------------
 template <class DT>
 void SortedArray<DT>::copy(const SortedArray<DT>& sa) {
@@ -82,7 +87,7 @@ void SortedArray<DT>::copy(const SortedArray<DT>& sa) {
 		elements[i] = sa.elements[i];
 	}
 }
-
+*/
 //destructor method ---------------------------------------------------------------------------
 template <class DT>
 SortedArray<DT>::~SortedArray (){
@@ -95,6 +100,11 @@ SortedArray<DT>::~SortedArray (){
 template <class DT>
 int SortedArray<DT>::size () {
 	return _size;
+}
+
+template <class DT>
+void SortedArray<DT>::setSize(int n) {
+	_size = n;
 }
 
 template <class DT>
@@ -131,6 +141,13 @@ ostream& operator << (ostream& s,  SortedArray<DT>& sa) { //This line taken from
 
 	return s;
 }
+
+/*
+template<class DT>
+void SortedArray<DT>::operator= (const SortedArray<DT>& sa) {
+
+}
+*/
 
 //The find function, returns the position of the element if in the array -----------------------------------------------------------------
 template <class DT>
@@ -199,9 +216,29 @@ void SortedArray<DT>::remove(const DT& oldElement) {
 }
 
 
+
+//Returns a sorted array containing elements i through end of array being split, erases these elements from old array
+template<class DT>
+SortedArray<DT>& SortedArray<DT>::split(int pos) { 
+	
+	SortedArray<DT>* newArray = new SortedArray<DT>(this->getCapacity()); // Initiate an array to hold elements from position to end
+
+	int x = this->size()-pos;
+
+	for (int i = 0; i < x; i++) {
+		newArray->elements[i] = this->elements[pos+i]; //Copy the elements from old  array to new array
+		this->remove(this->elements[pos+i]); //Remove this element from the old array
+	}
+
+	newArray->setSize(x); //The size of the new array will be the old arrays size minus the cut point
+
+	return *newArray;
+}
+
+
 int main() {
 
-	SortedArray<int> ai(5);
+	SortedArray<int> ai(5); 
 
 	for (int i = 0; i < (ai.getCapacity()); i++) {
 		ai[i] = i*2;
@@ -210,8 +247,10 @@ int main() {
 
 	cout << ai << endl;
 	
+	SortedArray<int> ai2 = ai.split(3); //Split at position 3
 
 	cout << ai;
+	cout << ai2;
 	
 	return 0;
 
