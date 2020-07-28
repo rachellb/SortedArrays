@@ -191,25 +191,25 @@ void SortedArray<DT>::insert(const DT& newElement) {
 	this->increaseSize(); //Increase  the size of the array by one
 
 	
-	for (int i = n; i > pos; i--) { //Starting from the end of the array and going until right before position
-		this->elements[i] = this->elements[i - 1];  //Move everything over by one, this way I don't overwrite elements
-	}
-	
-	this->elements[pos] = newElement; //Insert the new element into the appropriate position
-	
+for (int i = n; i > pos; i--) { //Starting from the end of the array and going until right before position
+	this->elements[i] = this->elements[i - 1];  //Move everything over by one, this way I don't overwrite elements
+}
+
+this->elements[pos] = newElement; //Insert the new element into the appropriate position
+
 }
 
 //The remove function ------------------------------------------------------------------------------------
 template<class DT>
 void SortedArray<DT>::remove(const DT& oldElement) {
-	
+
 	int pos;
 	pos = this->find(oldElement); //Search in this array for the position of the element
 	if (this->elements[pos] != oldElement) throw SortedArrayMemoryException(); //If the element is not in the array, throw exception
 
 	int n = this->size();
 
-	for(int i = pos; i < n - 1; i++) { //Starting from the desired element and going until the next to last spot
+	for (int i = pos; i < n - 1; i++) { //Starting from the desired element and going until the next to last spot
 		this->elements[i] = this->elements[i + 1]; //Should overwrite from the desired position to the end
 	}
 
@@ -220,15 +220,15 @@ void SortedArray<DT>::remove(const DT& oldElement) {
 
 //Returns a sorted array containing elements i through end of array being split, erases these elements from old array-------------------------
 template<class DT>
-SortedArray<DT>& SortedArray<DT>::split(int pos) { 
-	
+SortedArray<DT>& SortedArray<DT>::split(int pos) {
+
 	SortedArray<DT>* newArray = new SortedArray<DT>(this->getCapacity()); // Initiate an array to hold elements from position to end
 
-	int x = this->size()-pos;
+	int x = this->size() - pos;
 
 	for (int i = 0; i < x; i++) {
-		newArray->elements[i] = this->elements[pos+i]; //Copy the elements from old  array to new array
-		this->remove(this->elements[pos+i]); //Remove this element from the old array
+		newArray->elements[i] = this->elements[pos + i]; //Copy the elements from old  array to new array
+		this->remove(this->elements[pos + i]); //Remove this element from the old array
 	}
 
 	newArray->setSize(x); //The size of the new array will be the old arrays size minus the cut point
@@ -237,7 +237,7 @@ SortedArray<DT>& SortedArray<DT>::split(int pos) {
 }
 
 template<class DT>
-void SortedArray<DT>::join(SortedArray<DT>& P) { 
+void SortedArray<DT>::join(SortedArray<DT>& P) {
 
 	if ((this->size() + P.size()) > this->getCapacity()) throw SortedArrayBoundaryException(); //If adding this array overruns array capacity, throw error
 
@@ -249,9 +249,52 @@ void SortedArray<DT>::join(SortedArray<DT>& P) {
 	if (P.elements != NULL) delete[] P.elements;
 	P.elements = NULL;
 	P._size = 0;
-	
+
 }
 
+//Linked List Exceptions -----------------------------------------------------
+
+class LinkedListException : public Exception {};
+class LinkedListMemory : public LinkedListException {};
+class LinkedListBounds : public LinkedListException {};
+class LinkedListNotFound : public LinkedListException {};
+class LinkedListNotFound : public LinkedListException {};
+class LinkedListAttachToEmpty : public LinkedListException {};
+
+template <class DT>
+class LinkedSortedArrays
+{
+private:
+	list<SortedArray<DT> > nameIT;
+	int ArraySizeFactor;
+
+public:
+	LinkedSortedArrays(); //Default Constructor
+	LinkedSortedArrays(DT& ArraySizeFactor); // Non-default Constructor
+	LinkedSortedArrays(DT& ArraySizeFactor, Linked); //Copy Constructor
+	~LinkedSortedArrays();
+	DT& find(const DT& key);
+	void add(DT& object);
+
+};
+
+//TODO: Change details
+template<class DT>
+LinkedSortedArrays<DT>::~LinkedSortedArrays() {
+	if (_info != NULL) {
+		delete _info;
+		_info = NULL;
+	}
+	if (_next != NULL) {
+		delete _next; //Recursive call to destructor, delets rest of list
+		_next = NULL;
+	}
+}
+
+template<class DT>
+void LinkedSortedArrays<DT>::add (DT& object) {
+
+}
 
 int main() {
 
