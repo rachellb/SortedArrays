@@ -39,8 +39,9 @@ public:
 	//void operator= (const SortedArray<DT>& sa);
 	int find(const DT& lookfor);
 	void insert(const DT& newElement); // For inserting new elements in the array
-	void remove(const DT& oldElement);
-	SortedArray<DT>& split(int pos);
+	void remove(const DT& oldElement); // Removes elements from the array
+	SortedArray<DT>& split(int pos); //Splits the array at position pos, making two arrays
+	void join(SortedArray<DT>& P); // Joins two arrays, destroying array P afterword
 
 };
 
@@ -217,7 +218,7 @@ void SortedArray<DT>::remove(const DT& oldElement) {
 
 
 
-//Returns a sorted array containing elements i through end of array being split, erases these elements from old array
+//Returns a sorted array containing elements i through end of array being split, erases these elements from old array-------------------------
 template<class DT>
 SortedArray<DT>& SortedArray<DT>::split(int pos) { 
 	
@@ -232,25 +233,52 @@ SortedArray<DT>& SortedArray<DT>::split(int pos) {
 
 	newArray->setSize(x); //The size of the new array will be the old arrays size minus the cut point
 
-	return *newArray;
+	return *newArray; // If you star a star, does that make it just the value?
+}
+
+template<class DT>
+void SortedArray<DT>::join(SortedArray<DT>& P) { 
+
+	if ((this->size() + P.size()) > this->getCapacity()) throw SortedArrayBoundaryException(); //If adding this array overruns array capacity, throw error
+
+	for (int i = 0; i < P.size(); i++) {
+		this->insert(P[i]); //Insert into the array 
+	}
+
+	//This works just like the destructor, fairly sure this is correct.
+	if (P.elements != NULL) delete[] P.elements;
+	P.elements = NULL;
+	P._size = 0;
+	
 }
 
 
 int main() {
 
-	SortedArray<int> ai(5); 
+	SortedArray<int> ai(10); 
+	SortedArray<int> ai2(10);
 
-	for (int i = 0; i < (ai.getCapacity()); i++) {
+	for (int i = 0; i < 5; i++) {
 		ai[i] = i*2;
 		ai.increaseSize();
 	}
 
-	cout << ai << endl;
-	
-	SortedArray<int> ai2 = ai.split(3); //Split at position 3
+	for (int i = 0; i < 5; i++) {
+		ai2[i] = (i*2)+1;
+		ai2.increaseSize();
+	}
 
-	cout << ai;
-	cout << ai2;
+	cout << ai << endl;
+	cout << ai2 << endl;
+
+	ai.join(ai2);
+
+	cout << ai << endl;
+
+	//SortedArray<int> ai2 = ai.split(3); //Split at position 3
+
+	//cout << ai;
+	//cout << ai2;
 	
 	return 0;
 
