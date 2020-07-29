@@ -24,19 +24,16 @@ protected:
 	DT* elements; //The elements that will be inside the array
 	int _size;    // The size of the array
 	int capacity; // The initial capacity of the array
-	//void copy(const SortedArray<DT>& sa);
 
 public:
 	SortedArray(); //default constructor
 	SortedArray(int n); //The non-default constructor
-	//SortedArray(const SortedArray<DT>& sa, int i); //The copy constructor
 	virtual ~SortedArray();
 	virtual DT& operator[] (int k);
 	virtual int size() ;  //Getter for size
 	void setSize(int n);
 	int getCapacity();
 	void increaseSize(); //Increase the size of the objects in the array
-	//void operator= (const SortedArray<DT>& sa);
 	int find(const DT& lookfor);
 	void insert(const DT& newElement); // For inserting new elements in the array
 	void remove(const DT& oldElement); // Removes elements from the array
@@ -69,26 +66,6 @@ SortedArray<DT>::SortedArray(int n) {
 	_size = 0; //Starts out with no elements 
 }
 
-/*
-template <class DT>
-SortedArray<DT>::SortedArray(const SortedArray<DT>& sa, int i) {
-	if (&sa != this) //Disallow copying the object on to itself
-		copy(sa);
-}
-*/
-/*
-//For implementing copy constructor ------------------------------------------------------------
-template <class DT>
-void SortedArray<DT>::copy(const SortedArray<DT>& sa) {
-	_size = 0;
-	elements = new DT[sa.size()];
-	if (elements == NULL) throw SortedArrayMemoryException();
-	_size = sa.size();
-	for (int i = 0; i < _size; i++) {
-		elements[i] = sa.elements[i];
-	}
-}
-*/
 //destructor method ---------------------------------------------------------------------------
 template <class DT>
 SortedArray<DT>::~SortedArray (){
@@ -143,12 +120,6 @@ ostream& operator << (ostream& s,  SortedArray<DT>& sa) { //This line taken from
 	return s;
 }
 
-/*
-template<class DT>
-void SortedArray<DT>::operator= (const SortedArray<DT>& sa) {
-
-}
-*/
 
 //The find function, returns the position of the element if in the array -----------------------------------------------------------------
 template <class DT>
@@ -252,72 +223,105 @@ void SortedArray<DT>::join(SortedArray<DT>& P) {
 
 }
 
-//Linked List Exceptions -----------------------------------------------------
+//Linked List Exceptions -------------------------------------------------------------------------------------
 
 class LinkedListException : public Exception {};
 class LinkedListMemory : public LinkedListException {};
 class LinkedListBounds : public LinkedListException {};
-class LinkedListNotFound : public LinkedListException {};
 class LinkedListNotFound : public LinkedListException {};
 class LinkedListAttachToEmpty : public LinkedListException {};
 
 template <class DT>
 class LinkedSortedArrays
 {
+
+	template<class DT>
+	friend ostream& operator<< (ostream& s, LinkedSortedArrays<DT>& la);
+
 private:
-	list<SortedArray<DT> > nameIT;
+	list<SortedArray<DT>> nameIT; //If it's a list of arrays, are we only making one list?
 	int ArraySizeFactor;
 
 public:
 	LinkedSortedArrays(); //Default Constructor
-	LinkedSortedArrays(DT& ArraySizeFactor); // Non-default Constructor
-	LinkedSortedArrays(DT& ArraySizeFactor, Linked); //Copy Constructor
+	LinkedSortedArrays(int as); // Non-default Constructor
 	~LinkedSortedArrays();
+	DT& getList(LinkedSortedArrays<DT>& lsa);
 	DT& find(const DT& key);
-	void add(DT& object);
-
 };
 
-//TODO: Change details
+//The constructors ---------------------------------------------------------------------------------------------------
+//Default
+template <class DT>
+LinkedSortedArrays<DT>::LinkedSortedArrays() {
+	ArraySizeFactor = 0;
+}
+
+//Non-default constructor
+template <class DT>
+LinkedSortedArrays<DT>::LinkedSortedArrays(int asf) {
+	ArraySizeFactor = asf;
+}
+
+
+//Destructor ----------------------------------------------------------------------------------------------------
 template<class DT>
 LinkedSortedArrays<DT>::~LinkedSortedArrays() {
-	if (_info != NULL) {
-		delete _info;
-		_info = NULL;
-	}
-	if (_next != NULL) {
-		delete _next; //Recursive call to destructor, delets rest of list
-		_next = NULL;
+	nameIT.clear();
+	ArraySizeFactor = 0;
+}
+
+//Getters --------------------------------------------------------------------------------------------------------
+template <class DT>
+DT& LinkedSortedArrays<DT>::getList(LinkedSortedArrays<DT>& lsa) {
+	return nameIT;
+}
+
+
+
+template <class DT>
+ostream& operator << (ostream& s, LinkedSortedArrays<DT>& la) {
+	for (int val : la.nameIT) {
+		cout << val << endl; //Should iterate through all items in the list, then calls the ostream operator for each array
 	}
 }
 
+
+/*
 template<class DT>
-void LinkedSortedArrays<DT>::add (DT& object) {
+DT& LinkedSortedArrays<DT>::find(const DT& key) {
 
 }
+*/
 
 int main() {
 
-	SortedArray<int> ai(10); 
-	SortedArray<int> ai2(10);
+	SortedArray<int>* ai = new SortedArray<int>(10); 
+	SortedArray<int>* ai2 = new SortedArray<int>(10);
 
+	LinkedSortedArrays<SortedArray<int>>* ls = new LinkedSortedArrays<SortedArray<int>>(10); //The star means pointer, list made in heap
+	
+
+
+
+	/*
 	for (int i = 0; i < 5; i++) {
-		ai[i] = i*2;
-		ai.increaseSize();
+		(*ai)[i] = i*2;
+		(*ai).increaseSize();
 	}
 
 	for (int i = 0; i < 5; i++) {
-		ai2[i] = (i*2)+1;
-		ai2.increaseSize();
+		(*ai2)[i] = (i*2)+1;
+		(*ai2).increaseSize();
 	}
 
-	cout << ai << endl;
-	cout << ai2 << endl;
+	cout << *ai << endl;
+	cout << (*ai2) << endl;
 
-	ai.join(ai2);
+	(*ai).join(*ai2);
 
-	cout << ai << endl;
-
+	cout << (*ai) << endl;
+	*/
 	//SortedArray<int> ai2 = ai.split(3); //Split at position 3
 
 	//cout << ai;
