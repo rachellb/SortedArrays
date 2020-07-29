@@ -247,7 +247,8 @@ public:
 	LinkedSortedArrays(int as); // Non-default Constructor
 	~LinkedSortedArrays();
 	DT& getList(LinkedSortedArrays<DT>& lsa);
-	DT& find(const DT& key);
+	DT& find(const DT& key); //Finds elements in the arrays
+	void insert(const DT& newOne); //Inserts new item into array if it fits and isn't already there
 };
 
 //The constructors ---------------------------------------------------------------------------------------------------
@@ -281,18 +282,31 @@ DT& LinkedSortedArrays<DT>::getList(LinkedSortedArrays<DT>& lsa) {
 
 template <class DT>
 ostream& operator << (ostream& s, LinkedSortedArrays<DT>& la) {
-	for (int val : la.nameIT) {
-		cout << val << endl; //Should iterate through all items in the list, then calls the ostream operator for each array
+	for (SortedArray<DT> val : la.nameIT) { 
+		cout << val << endl; //Should iterate through all items in the list, then calls the sorted array ostream operator for each array
 	}
 }
 
 
-/*
+
 template<class DT>
 DT& LinkedSortedArrays<DT>::find(const DT& key) {
 
+	//Hopefully, this grabs the first item in the first array and last item of the last, and checks against the key
+	//TODO: How to I access the last item in the array?
+	if ((this->nameIT.front()[0] > key)) throw LinkedListBounds(); 
+
+	int s = this->nameIT.back().size() - 1; //Maybe will be position of final element?
+	if (this->nameIT.back()[s] < key) throw LinkedListBounds();
+
+	for (SortedArray<DT> val : this->nameIT) { //Iterate through this's list
+		if ((key >= val[0]) && (key <= val[val.size() - 1])) { //If the element is within the array's bounds
+			//Find returns an integer here, why am I returning a reference?
+			return &val.find(key); //Return a reference to the sought after object
+		}
+	}
 }
-*/
+
 
 int main() {
 
