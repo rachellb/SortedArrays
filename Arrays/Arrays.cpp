@@ -234,11 +234,11 @@ class LinkedListAttachToEmpty : public LinkedListException {};
 template <class DT>
 class LinkedSortedArrays
 {
-
 	template<class DT>
 	friend ostream& operator<< (ostream& s, LinkedSortedArrays<DT>& la);
 
 private:
+
 	list<SortedArray<DT>> nameIT; //If it's a list of arrays, are we only making one list?
 	int ArraySizeFactor;
 
@@ -246,9 +246,10 @@ public:
 	LinkedSortedArrays(); //Default Constructor
 	LinkedSortedArrays(int as); // Non-default Constructor
 	~LinkedSortedArrays();
-	DT& getList(LinkedSortedArrays<DT>& lsa);
+	list<SortedArray<DT>> getList();
 	DT& find(const DT& key); //Finds elements in the arrays
 	void insert(const DT& newOne); //Inserts new item into array if it fits and isn't already there
+	void insertArray(const SortedArray<DT>& newA);
 };
 
 //The constructors ---------------------------------------------------------------------------------------------------
@@ -256,12 +257,14 @@ public:
 template <class DT>
 LinkedSortedArrays<DT>::LinkedSortedArrays() {
 	ArraySizeFactor = 0;
+	list<SortedArray<DT>> nameIT;
 }
 
 //Non-default constructor
 template <class DT>
 LinkedSortedArrays<DT>::LinkedSortedArrays(int asf) {
 	ArraySizeFactor = asf;
+
 }
 
 
@@ -274,7 +277,7 @@ LinkedSortedArrays<DT>::~LinkedSortedArrays() {
 
 //Getters --------------------------------------------------------------------------------------------------------
 template <class DT>
-DT& LinkedSortedArrays<DT>::getList(LinkedSortedArrays<DT>& lsa) {
+list<SortedArray<DT>> LinkedSortedArrays<DT>::getList() {
 	return nameIT;
 }
 
@@ -282,9 +285,19 @@ DT& LinkedSortedArrays<DT>::getList(LinkedSortedArrays<DT>& lsa) {
 
 template <class DT>
 ostream& operator << (ostream& s, LinkedSortedArrays<DT>& la) {
-	for (SortedArray<DT> val : la.nameIT) { 
-		cout << val << endl; //Should iterate through all items in the list, then calls the sorted array ostream operator for each array
+
+	typename list<SortedArray<DT>>::iterator iter;
+
+	for (iter = la.nameIT.begin(); iter != la.nameIT.end(); iter++) {
+		s << *iter << endl;
 	}
+
+	/*
+	for (SortedArray<DT> val : la.nameIT) { 
+		s << val << endl; //Should iterate through all items in the list, then calls the sorted array ostream operator for each array
+	}
+	*/
+	return s;
 }
 
 
@@ -293,37 +306,81 @@ template<class DT>
 DT& LinkedSortedArrays<DT>::find(const DT& key) {
 
 	//Hopefully, this grabs the first item in the first array and last item of the last, and checks against the key
-	//TODO: How to I access the last item in the array?
-	if ((this->nameIT.front()[0] > key)) throw LinkedListBounds(); 
+	//TODO: How do I access the last item in the array?
+	if ((this->getList().front()[0] > key)) throw LinkedListBounds(); 
 
-	int s = this->nameIT.back().size() - 1; //Maybe will be position of final element?
-	if (this->nameIT.back()[s] < key) throw LinkedListBounds();
+	int s = ((this->getList().back()).size()) - 1; //Maybe will be position of final element?
+	if (this->getList().back()[s] < key) throw LinkedListBounds();
 
-	for (SortedArray<DT> val : this->nameIT) { //Iterate through this's list
+	for (SortedArray<DT> val : this->getList()) { //Iterate through this's list
 		if ((key >= val[0]) && (key <= val[val.size() - 1])) { //If the element is within the array's bounds
 			//Find returns an integer here, why am I returning a reference?
-			return &val.find(key); //Return a reference to the sought after object
+			return &val; //Return a reference to the array? Or to an element in the array?
 		}
 	}
 }
 
 
+template<class DT>
+void LinkedSortedArrays<DT>::insert(const DT& newOne) {
+
+
+	DT& val = this->find(newOne); //Not sure what this should be attached to
+	
+	//Case 1: Item already in list:
+	if (*val == newOne) throw SortedArrayException(); //If value at location is equal to the new value, throw error
+
+	//Case 2: Item not in list and there's room for insertion
+	this->getList().insert(val); //I don't think this makes sense, how is it inserting into the appropriate spot?
+
+	//Case 3: Item not in list but no room to insert, so will need to split an array and add it to list
+
+
+}
+
+template <class DT>
+void LinkedSortedArrays<DT>::insertArray(const SortedArray<DT>& newA) {
+	this->nameIT.push_back(newA);
+}
+
+
 int main() {
 
-	SortedArray<int>* ai = new SortedArray<int>(10); 
+	SortedArray<int>* ai = new SortedArray<int>(5);
 	SortedArray<int>* ai2 = new SortedArray<int>(10);
 
-	LinkedSortedArrays<SortedArray<int>>* ls = new LinkedSortedArrays<SortedArray<int>>(10); //The star means pointer, list made in heap
+	LinkedSortedArrays<int>* ls = new LinkedSortedArrays<int>(10); 
 	
-
-
-
-	/*
 	for (int i = 0; i < 5; i++) {
-		(*ai)[i] = i*2;
+		(*ai)[i] = i * 2;
 		(*ai).increaseSize();
 	}
 
+	cout << *ai;
+
+	//list<SortedArray<int>>  x = ls.getList();
+
+	list<SortedArray<int>> test;
+
+	/*
+	test.push_front(*ai);
+
+	ls->nameIT.push_front(*ai);
+	*/
+	//(*ls).getList().push_front(*ai); //I thought this would add list
+
+	//(*ls).insert2(*ai);
+
+	ls->insertArray(*ai);
+
+	cout << *ls;
+	//cout << ls;
+
+	//ls->getList();
+	
+	
+
+	/*
 	for (int i = 0; i < 5; i++) {
 		(*ai2)[i] = (i*2)+1;
 		(*ai2).increaseSize();
