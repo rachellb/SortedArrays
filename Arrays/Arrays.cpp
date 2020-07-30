@@ -28,6 +28,7 @@ protected:
 public:
 	SortedArray(); //default constructor
 	SortedArray(int n); //The non-default constructor
+	SortedArray(int n, const DT& val); //Non-default with pre-initialized array of values
 	virtual ~SortedArray();
 	virtual DT& operator[] (int k);
 	virtual int size() ;  //Getter for size
@@ -39,7 +40,8 @@ public:
 	void remove(const DT& oldElement); // Removes elements from the array
 	SortedArray<DT>& split(int pos); //Splits the array at position pos, making two arrays
 	void join(SortedArray<DT>& P); // Joins two arrays, destroying array P afterword
-
+	DT& getMin(); //returns the min value of the array
+	DT& getMax(); //returns the max value of the array
 };
 
 //The constructors ---------------------------------------------------------
@@ -64,6 +66,19 @@ SortedArray<DT>::SortedArray(int n) {
 	elements = new DT[n];
 	if (elements == NULL) throw SortedArrayMemoryException();
 	_size = 0; //Starts out with no elements 
+}
+
+//non-default constructor 
+template <class DT>
+SortedArray<DT>::SortedArray(int n, const DT& val) {
+	_size = 0; // default in case allocation fails
+	capacity = n;
+	elements = new DT[n];
+	if (elements == NULL) throw SortedArrayMemoryException();
+	_size = n; //Starts out with no elements 
+	for (int i = 0; i < n; i++) {
+		elements[i] = val; //Fill with value
+	}
 }
 
 //destructor method ---------------------------------------------------------------------------
@@ -101,6 +116,18 @@ template <class DT>
 DT& SortedArray<DT>::operator[] (int k) {
 	if ((k < 0) || (k >= getCapacity())) throw SortedArrayBoundaryException(); //If indexing outside of bounds of array, throw error
 	return elements[k];
+}
+
+
+//Max and Min values in the array ---------------------------------------------------------------------------------------
+template <class DT>
+DT& SortedArray<DT>::getMin() {
+	return this->elements[0]; //Returns the first value in the array
+}
+
+template <class DT>
+DT& SortedArray<DT>::getMax() {
+	return this->elements[this->size()-1]; //Returns the last value in the array
 }
 
 //The overloaded ostream operator ------------------------------------------------------------------------------
@@ -142,7 +169,7 @@ int SortedArray<DT>::find(const DT& lookfor) {
 	}
 	
 
-	return left; //If the value is not found, return -1
+	return left; //If the value is not found, return left
 }
 
 
@@ -247,7 +274,8 @@ public:
 	LinkedSortedArrays(int as); // Non-default Constructor
 	~LinkedSortedArrays();
 	list<SortedArray<DT>> getList();
-	DT& find(const DT& key); //Finds elements in the arrays
+	int getArraySize();
+	int find(const DT& key); //Finds elements in the arrays
 	void insert(const DT& newOne); //Inserts new item into array if it fits and isn't already there
 	void insertArray(const SortedArray<DT>& newA);
 };
@@ -259,6 +287,7 @@ LinkedSortedArrays<DT>::LinkedSortedArrays() {
 	ArraySizeFactor = 0;
 	list<SortedArray<DT>> nameIT;
 }
+
 
 //Non-default constructor
 template <class DT>
@@ -281,6 +310,11 @@ list<SortedArray<DT>> LinkedSortedArrays<DT>::getList() {
 	return nameIT;
 }
 
+//Getters --------------------------------------------------------------------------------------------------------
+template <class DT>
+int LinkedSortedArrays<DT>::getArraySize() {
+	return ArraySizeFactor;
+}
 
 
 template <class DT>
@@ -292,32 +326,38 @@ ostream& operator << (ostream& s, LinkedSortedArrays<DT>& la) {
 		s << *iter << endl;
 	}
 
-	/*
-	for (SortedArray<DT> val : la.nameIT) { 
-		s << val << endl; //Should iterate through all items in the list, then calls the sorted array ostream operator for each array
-	}
-	*/
 	return s;
 }
 
 
 
 template<class DT>
-DT& LinkedSortedArrays<DT>::find(const DT& key) {
+int LinkedSortedArrays<DT>::find(const DT& key) {
 
 	//Hopefully, this grabs the first item in the first array and last item of the last, and checks against the key
-	//TODO: How do I access the last item in the array?
-	if ((this->getList().front()[0] > key)) throw LinkedListBounds(); 
+	if ((this->nameIT.front()[0] > key)) throw LinkedListBounds(); 
 
-	int s = ((this->getList().back()).size()) - 1; //Maybe will be position of final element?
-	if (this->getList().back()[s] < key) throw LinkedListBounds();
+	SortedArray<DT> last = this->nameIT.back(); //Grabs the final array in list
 
-	for (SortedArray<DT> val : this->getList()) { //Iterate through this's list
-		if ((key >= val[0]) && (key <= val[val.size() - 1])) { //If the element is within the array's bounds
-			//Find returns an integer here, why am I returning a reference?
-			return &val; //Return a reference to the array? Or to an element in the array?
+	int s = ((this->nameIT.back()).size()) - 1; //Maybe will be position of final element?
+	if (last[s] < key) throw LinkedListBounds();
+
+	DT* findme = new DT(key);
+	int nodeCount = 0;
+	int indexInNode = -1;
+	typename list <SortedArray<DT> > ::iterator it;
+
+	for (it = nameIT.begin(); it != nameIT.end(); it++) {
+		//getMin() and getMax() return the min and max value in the current SortedArray
+		if (key >= (*it).getMin() && key <= (*it).getMax()) {
+			indexInNode = (*it).find(*findme);
+			break;
 		}
+		nodeCount++;
 	}
+	//delete findme;
+	return (nodeCount * ArraySizeFactor) + indexInNode; // return an int which would represent the pos if all boxes in one array.
+
 }
 
 
@@ -346,21 +386,33 @@ void LinkedSortedArrays<DT>::insertArray(const SortedArray<DT>& newA) {
 
 int main() {
 
-	SortedArray<int>* ai = new SortedArray<int>(5);
-	SortedArray<int>* ai2 = new SortedArray<int>(10);
+	LinkedSortedArrays<int>* ls = new LinkedSortedArrays<int>(10);
 
-	LinkedSortedArrays<int>* ls = new LinkedSortedArrays<int>(10); 
+
+	int findPos = (*ls).find(value); //insertPos will hold the value returned by the LSA find method
+	int nodePosition = findPos / ls->getArraySize();  // int division floors the result to get correct node
+	int elementsPosition = findPos % ls->getArraySize();  // modulo gives us the remainder which represents the array position
+
+
+	//SortedArray<int>* ai = new SortedArray<int>(5); 
+	//SortedArray<int>* ai2 = new SortedArray<int>(10, 7); // Makes an array of 10 number 7s.
+
 	
+	/*
 	for (int i = 0; i < 5; i++) {
 		(*ai)[i] = i * 2;
 		(*ai).increaseSize();
 	}
+	cout << (*ai) << endl;
+	cout << (*ai).getMax();
+	*/
+	
 
-	cout << *ai;
+	//cout << *ai;
 
 	//list<SortedArray<int>>  x = ls.getList();
 
-	list<SortedArray<int>> test;
+	//list<SortedArray<int>> test;
 
 	/*
 	test.push_front(*ai);
@@ -369,11 +421,13 @@ int main() {
 	*/
 	//(*ls).getList().push_front(*ai); //I thought this would add list
 
-	//(*ls).insert2(*ai);
+	//(*ls).insertArray(*ai);
 
-	ls->insertArray(*ai);
+	int pos = (*ls).find(8);
 
-	cout << *ls;
+	cout << (*ls);
+
+
 	//cout << ls;
 
 	//ls->getList();
