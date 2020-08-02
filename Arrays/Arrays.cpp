@@ -5,10 +5,6 @@ using namespace std;
 
 // The Exceptions ---------------------------------------------------------
 class Exception {};
-class SortedArrayException : public Exception {};
-class SortedArrayMemoryException : public SortedArrayException {};
-class SortedArrayBoundaryException : public SortedArrayException {};
-class SortedArrayRedundantException : public SortedArrayException {};
 
 
 //template<class DT>
@@ -54,7 +50,7 @@ SortedArray<DT>::SortedArray() {
 	_size = 0; // default in case allocation fails
 	capacity = 0;
 	elements = new DT[ARRAY_CLASS_DEFAULT_SIZE];
-	if (elements == NULL) throw SortedArrayMemoryException();
+	if (elements == NULL) throw Exception();
 	_size = ARRAY_CLASS_DEFAULT_SIZE;
 }
 
@@ -64,17 +60,17 @@ SortedArray<DT>::SortedArray(int n) {
 	_size = 0; // default in case allocation fails
 	capacity = n;
 	elements = new DT[n];
-	if (elements == NULL) throw SortedArrayMemoryException();
+	if (elements == NULL) throw Exception();
 	_size = 0; //Starts out with no elements 
 }
 
-//non-default constructor 
+//non-default constructor filled with value, for testing purposes only
 template <class DT>
 SortedArray<DT>::SortedArray(int n, const DT& val) {
 	_size = 0; // default in case allocation fails
 	capacity = n;
 	elements = new DT[n];
-	if (elements == NULL) throw SortedArrayMemoryException();
+	if (elements == NULL) throw Exception();
 	_size = n; //Starts out with no elements 
 	for (int i = 0; i < n; i++) {
 		elements[i] = val; //Fill with value
@@ -114,7 +110,7 @@ void SortedArray<DT>::increaseSize() {
 //The overloaded indexing operator ------------------------------------------------------------------------------
 template <class DT>
 DT& SortedArray<DT>::operator[] (int k) {
-	if ((k < 0) || (k >= getCapacity())) throw SortedArrayBoundaryException(); //If indexing outside of bounds of array, throw error
+	if ((k < 0) || (k >= getCapacity())) throw Exception(); //If indexing outside of bounds of array, throw error
 	return elements[k];
 }
 
@@ -154,7 +150,7 @@ int SortedArray<DT>::find(const DT& lookfor) {
 
 	int left = 0; //Start from the first spot in the array
 	int right = (this->size() - 1); //Going all the way to the end of the array
-	if (this->elements == NULL) throw SortedArrayException();
+	if (this->elements == NULL) throw Exception();
 	while (left <= right) //While there is no overlap
 	{
 		int mid = (left + right) / 2; //The midpoint is calculated
@@ -177,12 +173,12 @@ int SortedArray<DT>::find(const DT& lookfor) {
 template <class DT>
 void SortedArray<DT>::insert(const DT& newElement) {
 	
-	if ((this->size() == this->getCapacity())) throw SortedArrayBoundaryException(); // If the array has already hit max capacity, throw exception
+	if ((this->size() == this->getCapacity())) throw Exception(); // If the array has already hit max capacity, throw exception
 
 	int pos;
 	pos = this->find(newElement); //Search in this array for the position of the element
 	
-	if (this->elements[pos] == newElement) throw SortedArrayRedundantException(); //Should throw an error if the item is already in the array
+	if (this->elements[pos] == newElement) throw Exception(); //Should throw an error if the item is already in the array
 
 	int n = this->size();
 
@@ -203,7 +199,7 @@ void SortedArray<DT>::remove(const DT& oldElement) {
 
 	int pos;
 	pos = this->find(oldElement); //Search in this array for the position of the element
-	if (this->elements[pos] != oldElement) throw SortedArrayMemoryException(); //If the element is not in the array, throw exception
+	if (this->elements[pos] != oldElement) throw Exception(); //If the element is not in the array, throw exception
 
 	int n = this->size();
 
@@ -237,7 +233,8 @@ SortedArray<DT>& SortedArray<DT>::split(int pos) {
 template<class DT>
 void SortedArray<DT>::join(SortedArray<DT>& P) {
 
-	if ((this->size() + P.size()) > this->getCapacity()) throw SortedArrayBoundaryException(); //If adding this array overruns array capacity, throw error
+	
+	//if ((this->size() + P.size()) > this->getCapacity()) throw Exception(); //If adding this array overruns array capacity, throw error
 
 	for (int i = 0; i < P.size(); i++) {
 		this->insert(P[i]); //Insert into the array 
@@ -247,16 +244,10 @@ void SortedArray<DT>::join(SortedArray<DT>& P) {
 	if (P.elements != NULL) delete[] P.elements;
 	P.elements = NULL;
 	P._size = 0;
+	
 
 }
 
-//Linked List Exceptions -------------------------------------------------------------------------------------
-
-class LinkedListException : public Exception {};
-class LinkedListMemory : public LinkedListException {};
-class LinkedListBounds : public LinkedListException {};
-class LinkedListNotFound : public LinkedListException {};
-class LinkedListAttachToEmpty : public LinkedListException {};
 
 template <class DT>
 class LinkedSortedArrays
@@ -275,9 +266,11 @@ public:
 	~LinkedSortedArrays();
 	list<SortedArray<DT>> getList();
 	int getArraySize();
-	int find(const DT& key); //Finds elements in the arrays
-	void insert(const DT& newOne); //Inserts new item into array if it fits and isn't already there
+	int listFind(const DT& key); //Finds elements in the arrays
+	void listInsert(const DT& newOne); //Inserts new item into array if it fits and isn't already there
 	void insertArray(const SortedArray<DT>& newA);
+	void remove(const DT& x); //Removes the element s from the linked sorted list
+	virtual DT& operator[] (int k); //Overloaded indexing operator
 };
 
 //The constructors ---------------------------------------------------------------------------------------------------
@@ -293,7 +286,9 @@ LinkedSortedArrays<DT>::LinkedSortedArrays() {
 template <class DT>
 LinkedSortedArrays<DT>::LinkedSortedArrays(int asf) {
 	ArraySizeFactor = asf;
-
+	
+	
+	
 }
 
 
@@ -323,7 +318,7 @@ ostream& operator << (ostream& s, LinkedSortedArrays<DT>& la) {
 	typename list<SortedArray<DT>>::iterator iter;
 
 	for (iter = la.nameIT.begin(); iter != la.nameIT.end(); iter++) {
-		s << *iter << endl;
+		s << *iter; 
 	}
 
 	return s;
@@ -332,17 +327,23 @@ ostream& operator << (ostream& s, LinkedSortedArrays<DT>& la) {
 
 
 template<class DT>
-int LinkedSortedArrays<DT>::find(const DT& key) {
+int LinkedSortedArrays<DT>::listFind(const DT& key) {
 
+	
 	//Hopefully, this grabs the first item in the first array and last item of the last, and checks against the key
-	if ((this->nameIT.front()[0] > key)) throw LinkedListBounds(); 
+
+	/*
+	if ((this->nameIT.front()[0] > key)) throw Exception(); 
 
 	SortedArray<DT> last = this->nameIT.back(); //Grabs the final array in list
 
 	int s = ((this->nameIT.back()).size()) - 1; //Maybe will be position of final element?
-	if (last[s] < key) throw LinkedListBounds();
+	if (last[s] < key) throw Exception();
+	*/
 
-	DT* findme = new DT(key);
+
+
+	//DT* findme = new DT(key);
 	int nodeCount = 0;
 	int indexInNode = -1;
 	typename list <SortedArray<DT> > ::iterator it;
@@ -350,7 +351,7 @@ int LinkedSortedArrays<DT>::find(const DT& key) {
 	for (it = nameIT.begin(); it != nameIT.end(); it++) {
 		//getMin() and getMax() return the min and max value in the current SortedArray
 		if (key >= (*it).getMin() && key <= (*it).getMax()) {
-			indexInNode = (*it).find(*findme);
+			indexInNode = (*it).find(key);
 			break;
 		}
 		nodeCount++;
@@ -362,95 +363,139 @@ int LinkedSortedArrays<DT>::find(const DT& key) {
 
 
 template<class DT>
-void LinkedSortedArrays<DT>::insert(const DT& newOne) {
+void LinkedSortedArrays<DT>::listInsert(const DT& newOne) {
 
-
-	DT& val = this->find(newOne); //Not sure what this should be attached to
+	int findPos;
+	int nodePosition;
+	int elementsPosition;
 	
-	//Case 1: Item already in list:
-	if (*val == newOne) throw SortedArrayException(); //If value at location is equal to the new value, throw error
+	if (this->nameIT.empty() == 1) { //If the list is empty
+		SortedArray<DT>* sa = new SortedArray<DT>(ArraySizeFactor); //Create a new sorted array to hold first element
+		this->nameIT.push_back(*sa); //Add the array to the list of arrays
 
-	//Case 2: Item not in list and there's room for insertion
-	this->getList().insert(val); //I don't think this makes sense, how is it inserting into the appropriate spot?
+		//Set all positios to 0
+		findPos = 0;
+		nodePosition = 0;
+		elementsPosition = 0;
+	}
 
+	else{ //If the list already has arrays
+		findPos = this->listFind(newOne); //insertPos will hold the value returned by the LSA find method
+		nodePosition = findPos / this->getArraySize();  // int division floors the result to get correct node
+	}
+
+	typename list<SortedArray<DT>>::iterator iter = this->nameIT.begin(); //Set iterator to beginning of list
+
+	advance(iter, nodePosition); //Advance the iterator to the correct node
+
+
+	elementsPosition = (*iter).find(newOne); 
+
+	
+
+	try{
+	
+		//Case 1: Item already in list:
+		if ((*iter)[elementsPosition] == newOne) throw Exception(); //If value at location is equal to the new value, throw error
+
+		//Case 2: Item not in list and there's room for insertion
+		(*iter).insert(newOne); //Using SortedArray insert function, insert newOne
+	
+	}
+	
+	catch (Exception e) //throw error if no room, I'm not sure this is how this works
 	//Case 3: Item not in list but no room to insert, so will need to split an array and add it to list
+	{
+		SortedArray<DT>* ai2 = new SortedArray<DT>(ArraySizeFactor);
+		
+		*ai2 = (*iter).split(elementsPosition); //Split the array at this point 
 
+		
+
+		typename list<SortedArray<DT>>::iterator next = iter; //I can't get list.next to work, so this will have to do
+		advance(next, 1); //Advance to the next space
+		
+		if (next == this->nameIT.end()) { //If the next pointer is at the end of the array
+			this->nameIT.push_back(*ai2); //Attach the new array to the end of the list
+			//advance(iter, 1); //Advance the iterator to this position
+			this->nameIT.back().insert(newOne); //Insert this item into the array at the back
+		}
+
+		else{ //Otherwise if the array is not being inserted at the back
+			this->nameIT.insert(iter, *ai2); //Insert the new array at this position
+			(*iter).insert(newOne);//Insert the item into the array at this position
+		}
+	}
 
 }
 
+
+//For testing purposes
 template <class DT>
 void LinkedSortedArrays<DT>::insertArray(const SortedArray<DT>& newA) {
 	this->nameIT.push_back(newA);
 }
 
+template<class DT>
+void LinkedSortedArrays<DT>::remove(const DT& x) {
+
+	int findPos = this->listFind(x); //findPos will hold the value returned by the LSA find method
+	int nodePosition = findPos / this->getArraySize();  // int division floors the result to get correct node
+	
+	typename list<SortedArray<DT>>::iterator iter = this->nameIT.begin(); //Set iterator to beginning of list
+
+	advance(iter, nodePosition); //Advance the iterator to the correct node
+
+	(*iter).remove(x); //Use the remove function to remove the element
+
+
+	if ((*iter).size() == (ArraySizeFactor/2)) { //If after removing the array is half full
+		this->nameIT.erase(iter); //Erase the node
+	}
+
+}
+
+
+//The overloaded [] operator for the linked sorted array ---------------------------------------------------------------
+template <class DT>
+DT& LinkedSortedArrays<DT>::operator[] (int k) {
+
+	int nodePosition = k / this->getArraySize();
+	int elementsPosition = k % this->getArraySize();  // modulo gives us the remainder which represents the array position
+
+	typename list<SortedArray<DT>>::iterator iter = this->nameIT.begin(); //Set iterator to beginning of list
+
+	advance(iter, nodePosition); //Advance the iterator to the correct node
+
+	return (*iter)[elementsPosition]; //Returns element at appropriate position - uses SortedArray overloaded [] operator
+}
 
 int main() {
 
-	LinkedSortedArrays<int>* ls = new LinkedSortedArrays<int>(10);
 
+	LinkedSortedArrays<int>* ls = new LinkedSortedArrays<int>(4);
 
-	int findPos = (*ls).find(value); //insertPos will hold the value returned by the LSA find method
-	int nodePosition = findPos / ls->getArraySize();  // int division floors the result to get correct node
-	int elementsPosition = findPos % ls->getArraySize();  // modulo gives us the remainder which represents the array position
+	//This should fill one entire array
+	(*ls).listInsert(0); 
+	(*ls).listInsert(2);
+	(*ls).listInsert(1);
+	(*ls).listInsert(3);
 
+	//Does it make another array and start filling?
+	(*ls).listInsert(4);
+	(*ls).listInsert(5);
+	(*ls).listInsert(7);
+	(*ls).listInsert(8);
 
-	//SortedArray<int>* ai = new SortedArray<int>(5); 
-	//SortedArray<int>* ai2 = new SortedArray<int>(10, 7); // Makes an array of 10 number 7s.
+	//How about if there are three arrays?
+	(*ls).listInsert(6);
 
-	
-	/*
-	for (int i = 0; i < 5; i++) {
-		(*ai)[i] = i * 2;
-		(*ai).increaseSize();
-	}
-	cout << (*ai) << endl;
-	cout << (*ai).getMax();
-	*/
-	
+	//Let's try removing
+	(*ls).remove(5);
+	(*ls).remove(7);
 
-	//cout << *ai;
+	cout << *ls;
 
-	//list<SortedArray<int>>  x = ls.getList();
-
-	//list<SortedArray<int>> test;
-
-	/*
-	test.push_front(*ai);
-
-	ls->nameIT.push_front(*ai);
-	*/
-	//(*ls).getList().push_front(*ai); //I thought this would add list
-
-	//(*ls).insertArray(*ai);
-
-	int pos = (*ls).find(8);
-
-	cout << (*ls);
-
-
-	//cout << ls;
-
-	//ls->getList();
-	
-	
-
-	/*
-	for (int i = 0; i < 5; i++) {
-		(*ai2)[i] = (i*2)+1;
-		(*ai2).increaseSize();
-	}
-
-	cout << *ai << endl;
-	cout << (*ai2) << endl;
-
-	(*ai).join(*ai2);
-
-	cout << (*ai) << endl;
-	*/
-	//SortedArray<int> ai2 = ai.split(3); //Split at position 3
-
-	//cout << ai;
-	//cout << ai2;
 	
 	return 0;
 
